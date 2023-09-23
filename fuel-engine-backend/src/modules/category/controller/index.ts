@@ -4,39 +4,47 @@ import { categoryService } from '../service';
 export const categoryRoutes = Router();
 
 
-categoryRoutes.post('/generate-otp', async (req: Request, res: any) => {
+categoryRoutes.post('/', async (req: Request, res: any) => {
     try {
-        await categoryService.generateOTP(req, res);
+        await categoryService.createCategory(req, res);
         successResponseHandler(res)
     } catch (error) {
         errorResponseHandler(res, error)
     }
 })
-categoryRoutes.post('/sign-up', async (req: Request, res: any) => {
-    try {        
-        const data = await categoryService.verifyOTPAndSignUp(req, res);
-        successResponseHandler(res, data)
-
-    } catch (error) {
-        errorResponseHandler(res, error)
-
-    }
-})
-categoryRoutes.post('/login', async (req: Request, res: any) => {
-    try {        
-        const data = await categoryService.loginWithOTP(req, res);
-        successResponseHandler(res, data)
-
-    } catch (error) {
-        errorResponseHandler(res, error)
-
-    }
-})
-
-
-categoryRoutes.get('/refresh-token', async (req: Request, res: any) => {
+categoryRoutes.put('/:id', async (req: Request, res: any) => {
     try {
-        const data = await categoryService.refreshToken(req, res);
+        const data = await categoryService.updateCategory(req, res);
+        successResponseHandler(res, data)
+
+    } catch (error) {
+        errorResponseHandler(res, error)
+
+    }
+})
+categoryRoutes.delete('/:id', async (req: Request, res: any) => {
+    try {
+        const data = await categoryService.deleteCategory(req, res);
+        successResponseHandler(res, data)
+
+    } catch (error) {
+        errorResponseHandler(res, error)
+
+    }
+})
+categoryRoutes.get('/:id', async (req: Request, res: any) => {
+    try {
+        const data = await categoryService.getCategoryById(req, res);
+        successResponseHandler(res, data)
+
+    } catch (error) {
+        errorResponseHandler(res, error)
+
+    }
+})
+categoryRoutes.get('/list', async (req: Request, res: any) => {
+    try {
+        const data = await categoryService.getCategoryList(req, res);
         successResponseHandler(res, data)
 
     } catch (error) {
