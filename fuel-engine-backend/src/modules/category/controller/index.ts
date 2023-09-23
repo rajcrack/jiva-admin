@@ -1,20 +1,20 @@
 import { Router } from 'express';
-import { authService } from '../service';
 import { errorResponseHandler, successResponseHandler } from '../../../common/response.handler';
-export const authRoutes = Router();
+import { categoryService } from '../service';
+export const categoryRoutes = Router();
 
 
-authRoutes.post('/generate-otp', async (req: Request, res: any) => {
+categoryRoutes.post('/generate-otp', async (req: Request, res: any) => {
     try {
-        await authService.generateOTP(req, res);
+        await categoryService.generateOTP(req, res);
         successResponseHandler(res)
     } catch (error) {
         errorResponseHandler(res, error)
     }
 })
-authRoutes.post('/sign-up', async (req: Request, res: any) => {
+categoryRoutes.post('/sign-up', async (req: Request, res: any) => {
     try {        
-        const data = await authService.verifyOTPAndSignUp(req, res);
+        const data = await categoryService.verifyOTPAndSignUp(req, res);
         successResponseHandler(res, data)
 
     } catch (error) {
@@ -22,9 +22,9 @@ authRoutes.post('/sign-up', async (req: Request, res: any) => {
 
     }
 })
-authRoutes.post('/login', async (req: Request, res: any) => {
+categoryRoutes.post('/login', async (req: Request, res: any) => {
     try {        
-        const data = await authService.loginWithOTP(req, res);
+        const data = await categoryService.loginWithOTP(req, res);
         successResponseHandler(res, data)
 
     } catch (error) {
@@ -34,9 +34,9 @@ authRoutes.post('/login', async (req: Request, res: any) => {
 })
 
 
-authRoutes.get('/refresh-token', async (req: Request, res: any) => {
+categoryRoutes.get('/refresh-token', async (req: Request, res: any) => {
     try {
-        const data = await authService.refreshToken(req, res);
+        const data = await categoryService.refreshToken(req, res);
         successResponseHandler(res, data)
 
     } catch (error) {

@@ -1,20 +1,20 @@
 import { Router } from 'express';
-import { authService } from '../service';
 import { errorResponseHandler, successResponseHandler } from '../../../common/response.handler';
-export const authRoutes = Router();
+import { brandService } from '../service';
+export const brandRoutes = Router();
 
 
-authRoutes.post('/generate-otp', async (req: Request, res: any) => {
+brandRoutes.post('/generate-otp', async (req: Request, res: any) => {
     try {
-        await authService.generateOTP(req, res);
+        await brandService.generateOTP(req, res);
         successResponseHandler(res)
     } catch (error) {
         errorResponseHandler(res, error)
     }
 })
-authRoutes.post('/sign-up', async (req: Request, res: any) => {
+brandRoutes.post('/sign-up', async (req: Request, res: any) => {
     try {        
-        const data = await authService.verifyOTPAndSignUp(req, res);
+        const data = await brandService.verifyOTPAndSignUp(req, res);
         successResponseHandler(res, data)
 
     } catch (error) {
@@ -22,9 +22,9 @@ authRoutes.post('/sign-up', async (req: Request, res: any) => {
 
     }
 })
-authRoutes.post('/login', async (req: Request, res: any) => {
+brandRoutes.post('/login', async (req: Request, res: any) => {
     try {        
-        const data = await authService.loginWithOTP(req, res);
+        const data = await brandService.loginWithOTP(req, res);
         successResponseHandler(res, data)
 
     } catch (error) {
@@ -34,9 +34,9 @@ authRoutes.post('/login', async (req: Request, res: any) => {
 })
 
 
-authRoutes.get('/refresh-token', async (req: Request, res: any) => {
+brandRoutes.get('/refresh-token', async (req: Request, res: any) => {
     try {
-        const data = await authService.refreshToken(req, res);
+        const data = await brandService.refreshToken(req, res);
         successResponseHandler(res, data)
 
     } catch (error) {

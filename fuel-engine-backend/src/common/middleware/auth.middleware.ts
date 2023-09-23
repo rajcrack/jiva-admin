@@ -1,5 +1,5 @@
-import { CustomError } from "./customError";
-import { errorResponseHandler } from "./response.handler";
+import { CustomError } from "../customError";
+import { errorResponseHandler } from "../response.handler";
 
 const jwt = require('jsonwebtoken');
 

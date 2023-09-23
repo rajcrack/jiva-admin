@@ -9,7 +9,7 @@ import { Users } from "../../../entities/user/user.entity";
 import { OTP } from "../../../entities/user/otp.entity";
 import { MoreThan } from "typeorm";
 
-class AuthService {
+class CategoryService {
     /**
      * Generate OTP for the given request.
      *
@@ -193,4 +193,4 @@ class AuthService {
     
 }
 
-export const authService = new AuthService();
+export const categoryService = new CategoryService();

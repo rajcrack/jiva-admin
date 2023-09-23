@@ -1,13 +1,12 @@
-import { DataSource, DataSourceOptions } from "typeorm";
+import { Admin, DataSource, DataSourceOptions } from "typeorm";
 import { config } from 'dotenv';
 import { Users } from "../../entities/user/user.entity";
-import { Shopkeeper } from "../../entities/user/shop.entity";
-import { Role } from "../../entities/user/role.entity";
-import { Order } from "../../entities/order/order.entity";
-import { OrderItem } from "../../entities/order/order-items.entity";
-import { DeliveryAgents } from "../../entities/user/delivery-agent.entity";
 import { Category } from "../../entities/product/catgeory.entity";
 import { Product } from "../../entities/product/products.entity";
+import { OTP } from "../../entities/user/otp.entity";
+import { Brand } from "../../entities/product/brand.entity";
+import { Plan } from "../../entities/plan/plan.entity";
+import { PlanMembership } from "../../entities/plan/plan-membership.entity";
 
 
 config();
@@ -19,7 +18,7 @@ export const mysqlConfig: DataSourceOptions = {
   "password": process.env.DB_PASSWORD,
   "database": process.env.DB_NAME,
   "migrationsTableName": "migrations",
-  "entities": [Users, Shopkeeper, Role, Order, OrderItem, DeliveryAgents, Category, Product],
+  "entities": [Users, OTP,Admin,Brand,Product,Category,Plan,PlanMembership],
   "migrations": ["dist/config/db/migrations/*.js"], connectTimeout: 20000
 }
 
