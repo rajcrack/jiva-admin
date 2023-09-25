@@ -1,4 +1,4 @@
-import { Navigate, useRoutes,useNavigate } from 'react-router-dom';import { useEffect,useState } from 'react';
+import { Navigate, useRoutes, useNavigate } from 'react-router-dom'; import { useEffect, useState } from 'react';
 
 // layouts
 import DashboardLayout from './layouts/dashboard';
@@ -10,32 +10,34 @@ import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
+import Products from './pages/Products';
 
 // ----------------------------------------------------------------------
 
 export default function Router() {
-  const [isAuthenticated,setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   useEffect(() => {
-   setIsAuthenticated(Boolean(localStorage.getItem('user-token'))) ; // Replace with your authentication logic
+    setIsAuthenticated(Boolean(localStorage.getItem('user-token'))); // Replace with your authentication logic
 
-  },[localStorage.getItem('user-token')])
+  }, [localStorage.getItem('user-token')])
 
   const routes = useRoutes([
     {
       path: '/dashboard',
       element: isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />,
-            children: [
+      children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'user', element: <UserPage /> },
+        { path: 'product', element: <Products /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
       ],
     },
     {
       path: '/login',
-      element: isAuthenticated ?  <Navigate to="/dashboard" />: <LoginPage /> ,
-           
+      element: isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />,
+
     },
     {
       element: <SimpleLayout />,
