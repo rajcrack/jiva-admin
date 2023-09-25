@@ -13,8 +13,8 @@ export class Brand extends Common {
     @Column({ type: 'text' })
     description: string;
 
-    @Column({ type: 'varchar', length: 255,name:'image_url',nullable:true })
-    imageUrl: number;    
+    @Column({ type: 'varchar', length: 255, name: 'image_url', nullable: true })
+    imageUrl: string;
 
     @OneToMany(() => Product, (product) => product.category)
     products: Product[];

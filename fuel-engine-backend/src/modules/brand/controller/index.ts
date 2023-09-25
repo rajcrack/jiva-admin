@@ -4,39 +4,50 @@ import { brandService } from '../service';
 export const brandRoutes = Router();
 
 
-brandRoutes.post('/generate-otp', async (req: Request, res: any) => {
+brandRoutes.post('/', async (req: Request, res: any) => {
     try {
-        await brandService.generateOTP(req, res);
+        await brandService.createBrand(req, res);
         successResponseHandler(res)
     } catch (error) {
         errorResponseHandler(res, error)
     }
 })
-brandRoutes.post('/sign-up', async (req: Request, res: any) => {
-    try {        
-        const data = await brandService.verifyOTPAndSignUp(req, res);
-        successResponseHandler(res, data)
-
-    } catch (error) {
-        errorResponseHandler(res, error)
-
-    }
-})
-brandRoutes.post('/login', async (req: Request, res: any) => {
-    try {        
-        const data = await brandService.loginWithOTP(req, res);
-        successResponseHandler(res, data)
-
-    } catch (error) {
-        errorResponseHandler(res, error)
-
-    }
-})
-
-
-brandRoutes.get('/refresh-token', async (req: Request, res: any) => {
+brandRoutes.put('/:id', async (req: Request, res: any) => {
     try {
-        const data = await brandService.refreshToken(req, res);
+        const data = await brandService.updateBrand(req, res);
+        successResponseHandler(res, data)
+
+    } catch (error) {
+        errorResponseHandler(res, error)
+
+    }
+})
+brandRoutes.delete('/:id', async (req: Request, res: any) => {
+    try {
+        const data = await brandService.deleteBrand(req, res);
+        successResponseHandler(res, data)
+
+    } catch (error) {
+        errorResponseHandler(res, error)
+
+    }
+})
+
+
+brandRoutes.get('/:id', async (req: Request, res: any) => {
+    try {
+        const data = await brandService.getBrandById(req, res);
+        successResponseHandler(res, data)
+
+    } catch (error) {
+        errorResponseHandler(res, error)
+
+    }
+})
+
+brandRoutes.get('/list', async (req: Request, res: any) => {
+    try {
+        const data = await brandService.getBrandList(req, res);
         successResponseHandler(res, data)
 
     } catch (error) {

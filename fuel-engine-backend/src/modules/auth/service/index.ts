@@ -84,9 +84,14 @@ class AuthService {
 
         await this.verifyOTP(phone,otp)
 
-        const user = await userRepository.findOne({ where: { phone: phone } });
+        let user = await userRepository.findOne({ where: { phone: phone } });
         if (!user) {
-            throw CustomError("User does not exist", 400)
+            const userToBeCreated = userRepository.create({
+                name: '',
+                phone: phone,
+            })
+    
+            user  = await userRepository.save(userToBeCreated);
         }
    
         const payload = { phone: user.phone, id: user.id };
@@ -169,14 +174,14 @@ class AuthService {
             throw CustomError('You have already requested an OTP',400)
         }
         
-        const user = await usersRepository.exist({ where: { phone: phone } });
+        // const user = await usersRepository.exist({ where: { phone: phone } });
 
-        if(operationType === OperationType.SIGN_UP && user){
-                throw CustomError("You are already registered with us, please login", 400)
-        }
-        if(operationType === OperationType.LOGIN && !user){
-                throw CustomError("You are not registered with us, please register", 400)
-        }
+        // if(operationType === OperationType.SIGN_UP && user){
+        //         throw CustomError("You are already registered with us, please login", 400)
+        // }
+        // if(operationType === OperationType.LOGIN && !user){
+        //         throw CustomError("You are not registered with us, please register", 400)
+        // }
 
         return true;
     }

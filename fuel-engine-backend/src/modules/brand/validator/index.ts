@@ -1,3 +1,2 @@
-export * from './signUpSchemaValidation'
-export * from './generateOtp.validator'
-export * from './verifyOtp.validator'
+export * from './updateBrand.validator'
+export * from './createBrand.validator'
