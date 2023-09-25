@@ -1,2 +1,2 @@
-export * from './updatePlan.validator'
-export * from './createPlan.validator'
+export * from './updatePlanMembership.validator'
+export * from './createPlanMembership.validator'

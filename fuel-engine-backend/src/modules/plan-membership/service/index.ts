@@ -2,32 +2,55 @@ import { AppDataSource } from "../../../config/db/config";
 import { CustomError } from "../../../common/customError";
 
 import { validateRequest } from "../../../common/validation";
-import { createPlanSchema } from "../validator";
 import { Plan } from "../../../entities/plan/plan.entity";
-import { updateBrandSchema } from "../../brand/validator";
 import { paginationSchema } from "../../../common/pagination/pagination.validator";
+import { PlanMembership } from "../../../entities/plan/plan-membership.entity";
+import { MoreThan } from "typeorm";
+import { createPlanMembershipSchema } from "../validator";
+import { USER_TYPE, Users } from "../../../entities/user/user.entity";
 
-class PlanService {
+class PlanMembershipService {
 
-    async createPlan(req: any, res: any) {
-        const validatedData = validateRequest(req.body, createPlanSchema);
+    async createPlanMembership(req: any, res: any) {
+        const {id:userId} =req.user
+        const validatedData = validateRequest(req.body, createPlanMembershipSchema);
+        const planMembershipRepository = AppDataSource.getRepository(PlanMembership);
+        const userRepository = AppDataSource.getRepository(Users);
+
         const planRepository = AppDataSource.getRepository(Plan);
+        const plan = await planRepository.findOne({
+            where:{
+                id:validatedData.planId
+            }
+        })
+             const user = await userRepository.findOne({
+            where:{
+                id:userId
+            }
+        })
+        if(!plan){
+            throw CustomError(`Could not find plan with id ${validatedData.planId}`, 404);
+        }
+        const expiresAt = new Date(new Date().getTime()+(plan.expiresIn*24*60*60*1000));
+        const planMembershipToBeCreated = planMembershipRepository.create({
 
-        const planToBeCreated = planRepository.create({
-            name: validatedData.name,
-            noOfProductsAllowed: validatedData.noOfProductsAllowed,
-            expiresIn: validatedData.expiresIn
+            user:{id:userId},plan:{
+                id:validatedData.planId
+            },
+            transactionId:validatedData.transactionId,
+            expiresAt
         })
 
-        const plan = await planRepository.save(planToBeCreated);
-
-
-        return plan;
+        await planMembershipRepository.save(planMembershipToBeCreated);
+user.userType = USER_TYPE.PAID
+        await userRepository.save(user)
+        const userActiveMembership = this.userActiveMembership(req,res);
+        return userActiveMembership;
 
     }
     async updatePlan(req: any, res: any) {
         const { id } = req.params;
-        const validatedData = validateRequest(req.body, updateBrandSchema);
+        const validatedData = validateRequest(req.body, createPlanMembershipSchema);
         const planRepository = AppDataSource.getRepository(Plan);
 
         const plan = await planRepository.findOne({
@@ -93,7 +116,38 @@ class PlanService {
 
 
     }
+    async userActiveMembership(req: any, res: any) {
+        const {id:userId} = req.user;
+        const planMembershipRepository = AppDataSource.getRepository(PlanMembership);
+        const activeMembership= await planMembershipRepository.findOne({
+            relations:{
+                plan:true,
+            },
+            where:{
+                user:{
+                    id:userId
+                },
+                isActive:true,
+                expiresAt:MoreThan(new Date()),
+            },
+            select:{
+                id:true,
+                expiresAt:true,
+                plan:{
+                    id:true,
+                    name:true,
+                    noOfProductsAllowed:true,
+                    isActive:true
+                },
+            }
+        })
+
+        return activeMembership
+
+
+    }
+
 
 }
 
-export const planService = new PlanService();
+export const planMembershipService = new PlanMembershipService();
