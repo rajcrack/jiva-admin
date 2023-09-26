@@ -22,7 +22,6 @@ import {
     TableContainer,
     TablePagination,
 } from '@mui/material';
-import { AddBrand } from '../sections/@dashboard/brand';
 
 // components
 import Label from '../components/label';
@@ -30,6 +29,7 @@ import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
+import { AddBrand } from '../sections/@dashboard/brand';
 
 // mock
 import USERLIST from '../_mock/user';

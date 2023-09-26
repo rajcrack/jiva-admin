@@ -34,9 +34,10 @@ class BrandService {
                 id: id,
             }
         });
-        if (brand) {
+        if (!brand) {
             throw CustomError(`Could not find brand with id ${id}`, 404);
         }
+        console.log(id)
         brand.name = validatedData.name;
         brand.description = validatedData.description;
         brand.imageUrl = validatedData.imageUrl;
@@ -53,7 +54,7 @@ class BrandService {
                 id: id,
             }
         });
-        if (brand) {
+        if (!brand) {
             throw CustomError(`Could not find brand with id ${id}`, 404);
         }
         await brandRepository.remove(brand);
@@ -68,7 +69,7 @@ class BrandService {
                 id: id,
             }
         });
-        if (brand) {
+        if (!brand) {
             throw CustomError(`Could not find brand with id ${id}`, 404);
         }
         return brand;

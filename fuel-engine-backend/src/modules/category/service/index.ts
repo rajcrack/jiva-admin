@@ -35,7 +35,7 @@ class CategoryService {
                 id: id,
             }
         });
-        if (category) {
+        if (!category) {
             throw CustomError(`Could not find category with id ${id}`, 404);
         }
         category.name = validatedData.name;
@@ -54,7 +54,7 @@ class CategoryService {
                 id: id,
             }
         });
-        if (category) {
+        if (!category) {
             throw CustomError(`Could not find category with id ${id}`, 404);
         }
         await categoryRepository.remove(category);
@@ -68,7 +68,7 @@ class CategoryService {
                 id: id,
             }
         });
-        if (category) {
+        if (!category) {
             throw CustomError(`Could not find category with id ${id}`, 404);
         }
         return category;

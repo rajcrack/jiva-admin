@@ -1,4 +1,4 @@
-import { Admin, DataSource, DataSourceOptions } from "typeorm";
+import { DataSource, DataSourceOptions } from "typeorm";
 import { config } from 'dotenv';
 import { Users } from "../../entities/user/user.entity";
 import { Category } from "../../entities/product/catgeory.entity";
@@ -7,6 +7,7 @@ import { OTP } from "../../entities/user/otp.entity";
 import { Brand } from "../../entities/product/brand.entity";
 import { Plan } from "../../entities/plan/plan.entity";
 import { PlanMembership } from "../../entities/plan/plan-membership.entity";
+import { Admin } from "../../entities/user/admin.entity";
 
 
 config();
