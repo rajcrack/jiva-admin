@@ -1,7 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';import { toast } from 'react-toastify';
+
 // @mui
 import {
     Card,
@@ -34,7 +35,7 @@ import { AddCategory, CategoryListHead, CategoryListToolBar } from '../sections/
 // mock
 import USERLIST from '../_mock/user';
 import { category } from '../_mock/category';
-import { getCategoryList, updateCategory, createCategory } from '../api/category';
+import { getCategoryList, updateCategory, createCategory, deleteCategoy } from '../api/category';
 
 // ----------------------------------------------------------------------
 
@@ -128,13 +129,9 @@ export default function Category() {
                 await updateCategory(data.id, data)
                 // const index = category.categoryList.findIndex(category => category.id === data.id)
                 // category.categoryList[index] = data;
-                setCategoryToBeUpdated({
-                    id: '',
-                    name: '',
-                    description: '',
-                    imageUrl: ''
-                })
+             
             } else {
+                delete data.id
                 await createCategory(data)
                 // data.id = category.categoryList.length + 1;
                 // data.imageurl = null;
@@ -142,12 +139,19 @@ export default function Category() {
                 // category.count = category.categoryList.length
                 // console.log(data);
             }
-
+            setCategoryToBeUpdated({
+                id: '',
+                name: '',
+                description: '',
+                imageUrl: ''
+            })
             await getCategoryListData()
             setIsAddProductLoading(false);
             setAddPopUp(false);
+            setOpen(null);
             console.log(categoryList.length);
         } catch (error) {
+          
             console.log(error)
         }
     };
@@ -182,42 +186,62 @@ export default function Category() {
         setSelected(newSelected);
     };
 
-    const handleChangePage = (event, newPage) => {
+    const handleChangePage =async  (event, newPage) => {
         setPage(newPage);
+        console.log(newPage)
     };
 
-    const handleChangeRowsPerPage = (event) => {
-        setPage(0);
-        setRowsPerPage(parseInt(event.target.value, 10));
+    const handleChangeRowsPerPage =async  (event) => {
+       setPage(0);
+         setRowsPerPage(parseInt(event.target.value, 10));         
+       console.log(page)
+       console.log(rowsPerPage,"iunsdie")
+
+
     };
 
     const handleFilterByName = (event) => {
         setPage(0);
         setFilterName(event.target.value);
+    }; 
+    const handleDelete = async (event) => {
+        if (categoryToBeUpdated.id !== '') {
+            await deleteCategoy(categoryToBeUpdated.id);
+        }
+        await getCategoryListData();
+                    setOpen(null);
+
+
+  
     };
     const getCategoryListData = async () => {
         try {
             const data = {
                 page: page + 1,
-                limit: rowsPerPage
+                limit: rowsPerPage,
+                keyword: filterName
             }
-            const { categoryList, count } = await getCategoryList(data);
+            console.log(data)
+            const categoryRes =await getCategoryList(data);
+            const { categoryList, count } = categoryRes.data
+            console.log(categoryList)
             setTotal(count);
             setCategoryList(categoryList)
         } catch (error) {
+         
             console.log(error)
         }
     };
-    useEffect(() => {
+    useEffect(() => {     
         getCategoryListData();
 
-    }, [])
+    }, [page,rowsPerPage,filterName])
 
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
-    const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+    // const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
 
-    const isNotFound = !filteredUsers.length && !!filterName;
+    const isNotFound = !categoryList.length && !!filterName;
 
     return (
         <>
@@ -257,9 +281,9 @@ export default function Category() {
 
                                         return (
                                             <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                                                <TableCell padding="checkbox">
+                                                {/* <TableCell padding="checkbox">
                                                     <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-                                                </TableCell>
+                                                </TableCell> */}
 
                                                 <TableCell align="left">
 
@@ -323,7 +347,7 @@ export default function Category() {
                     </Scrollbar>
 
                     <TablePagination
-                        rowsPerPageOptions={[5, 10, 25]}
+                        rowsPerPageOptions={[5, 10, 15]}
                         component="div"
                         count={total}
                         rowsPerPage={rowsPerPage}
@@ -358,7 +382,7 @@ export default function Category() {
                     Edit
                 </MenuItem>
 
-                <MenuItem sx={{ color: 'error.main' }}>
+                <MenuItem sx={{ color: 'error.main' }}  onClick={ handleDelete}>
                     <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
                     Delete
                 </MenuItem>

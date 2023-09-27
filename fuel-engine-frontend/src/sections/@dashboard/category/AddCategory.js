@@ -106,7 +106,7 @@ export default function AddCategory({ open, onPopUpClose, loading, onSubmit, ini
                                 </Stack>
                             ) : (
                                 <LoadingButton fullWidth size="large" type="submit" variant="contained">
-                                    Add Category
+{formData.id !=='' ? 'Update Category' :'Add Category'}                                     
                                 </LoadingButton>
                             )}
                         </Stack>

@@ -19,9 +19,9 @@ import Brand from './pages/Brand';
 export default function Router() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   useEffect(() => {
-    setIsAuthenticated(Boolean(localStorage.getItem('user-token'))); // Replace with your authentication logic
+    setIsAuthenticated(Boolean(localStorage.getItem('token'))); // Replace with your authentication logic
 
-  }, [localStorage.getItem('user-token')])
+  }, [localStorage.getItem('token')])
 
   const routes = useRoutes([
     {

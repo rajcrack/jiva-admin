@@ -23,8 +23,8 @@ export default function LoginForm() {
 
       const loginData = await login(formDataJSON);
 
-      console.log(loginData)
-      localStorage.setItem('token', 'adda')
+      console.log(loginData.data.jwt)
+      localStorage.setItem('token', loginData.data.jwt)
       navigate('/dashboard', { replace: true });
     }
     catch (error) {
@@ -36,7 +36,7 @@ export default function LoginForm() {
     <>        <form id='loginForm' onSubmit={handleClick}>
 
       <Stack spacing={3}>
-        <TextField name="phone" label="Phone Number" />
+        <TextField name="email" label="email" />
 
         <TextField
           name="password"

@@ -6,17 +6,19 @@ import { validateRequest } from "../../../common/validation";
 import { createCategorySchema, updateCategorySchema, } from "../validator";
 import { Category } from "../../../entities/product/catgeory.entity";
 import { paginationSchema } from "../../../common/pagination/pagination.validator";
+import { FindOptionsWhere, Like } from "typeorm";
 
 class CategoryService {
 
     async createCategory(req: any, res: any) {
+
         const validatedData = validateRequest(req.body, createCategorySchema);
         const categoryRepository = AppDataSource.getRepository(Category);
 
         const categoryToBeCreated = categoryRepository.create({
             name: validatedData.name,
             description: validatedData.description,
-            imageUrl: validatedData.imageUrl
+            imageUrl: validatedData.imageUrl || ' '
         })
 
         const category = await categoryRepository.save(categoryToBeCreated);
@@ -74,11 +76,17 @@ class CategoryService {
         return category;
     }
     async getCategoryList(req: any, res: any) {
-        const { limit = 10, page = 1 } = validateRequest(req.query, paginationSchema);
+        const { limit = 10, page = 1 ,keyword=''} = validateRequest(req.query, paginationSchema);
         const skip = limit * (page - 1);
 
         const categoryRepository = AppDataSource.getRepository(Category);
+        const              where: FindOptionsWhere<Category> = {}
+
+        if(keyword && keyword !==''){
+            where.name = Like(`%${keyword}%`)
+        }
         const [categoryList, count] = await categoryRepository.findAndCount({
+            where,
             take: limit,
             skip: skip,
             order: { createdAt: 'DESC' }
