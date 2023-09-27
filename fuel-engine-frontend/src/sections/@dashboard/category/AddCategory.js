@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types'; import { useState } from 'react';
+import PropTypes from 'prop-types'; import { useState, useEffect } from 'react';
 
 // @mui
 
@@ -30,26 +30,29 @@ const style = {
 //     product: PropTypes.object,
 // };
 
-export default function AddCategory({ open, onPopUpClose, loading, onSubmit }) {
+export default function AddCategory({ open, onPopUpClose, loading, onSubmit, initialValues }) {
+    const [formData, setFormData] = useState(() => initialValues);
 
     const [selectedBrand, setSelectedBrand] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState(0);
     const [formError, setFormError] = useState(false);
-
+    const handleFormChange = (event) => {
+        const { name, value } = event.target;
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+        }));
+    };
     const handleClick = (event) => {
-
         event.preventDefault(); setFormError(false);
 
-        const formElement = document.querySelector('#loginForm');
-        const formData = new FormData(formElement);
         console.log(formData);
-        const formDataJSON = Object.fromEntries(formData);
-        console.log(formDataJSON);
-        if (formDataJSON.brandId === '0' || formDataJSON.categoryId === '0') {
+        if (formData.name === '' || formData.description === '') {
             setFormError(true);
             return false;
-        } return true
-        // onSubmit(formDataJSON)
+        }
+        onSubmit(formData)
+        return true;
     };
 
     // console.log('addProduct', props);
@@ -57,7 +60,9 @@ export default function AddCategory({ open, onPopUpClose, loading, onSubmit }) {
     const handleClose = () => {
         onPopUpClose()
     }
-
+    useEffect(() => {
+        setFormData(initialValues)
+    }, [initialValues])
     return (
         <Modal
             open={open}
@@ -77,15 +82,16 @@ export default function AddCategory({ open, onPopUpClose, loading, onSubmit }) {
                 <form id='loginForm' onSubmit={handleClick} >
 
                     <Stack spacing={3}>
-                    <TextField name="productName" label="Brand Name" required />
-                        <TextField name="description" label="Description" />
-                       
-                        <TextField type='file' name="imageUrl"  />
+                        <TextField name="name" label="Category Name" value={formData.name} onChange={handleFormChange} required />
+                        <TextField name="description" label="Description" value={formData.description} onChange={handleFormChange} />
+
+                        <TextField type='file' name="imageUrl" />
                         {formError && (
                             <FormHelperText error>
                                 This field is required.
                             </FormHelperText>
                         )}
+
 
                         {formError && (
                             <FormHelperText error>

@@ -1,8 +1,8 @@
-import PropTypes from 'prop-types'; import { useState } from 'react';
+import PropTypes from 'prop-types'; import { useState, useEffect } from 'react';
 
 // @mui
 
-import { Link, Stack, Select, FormHelperText, MenuItem, CircularProgress, InputLabel, IconButton, InputAdornment, TextField, Input, Checkbox, Box, Card, Typography, Modal } from '@mui/material';
+import { Link, Stack, Select, FormHelperText, Avatar, MenuItem, CircularProgress, InputLabel, IconButton, InputAdornment, TextField, Input, Checkbox, Box, Card, Typography, Modal } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 // utils
@@ -30,34 +30,49 @@ const style = {
 //     product: PropTypes.object,
 // };
 
-export default function AddBrand({ open, onPopUpClose, loading, onSubmit }) {
+export default function AddBrand({ open, onPopUpClose, loading, onSubmit, initialValues }) {
+    console.log(initialValues)
+    const [formData, setFormData] = useState(() => initialValues);
+    const [selectedImage, setSelectedImage] = useState(null);
 
+    const handleImageChange = (event) => {
+        console.log("indsude")
+        const file = event.target.files[0];
+        const imageUrl = URL.createObjectURL(file);
+        setSelectedImage(imageUrl);
+    };
     const [selectedBrand, setSelectedBrand] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState(0);
     const [formError, setFormError] = useState(false);
-
+    const handleFormChange = (event) => {
+        const { name, value } = event.target;
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+        }));
+    };
     const handleClick = (event) => {
 
         event.preventDefault(); setFormError(false);
 
-        const formElement = document.querySelector('#loginForm');
-        const formData = new FormData(formElement);
         console.log(formData);
-        const formDataJSON = Object.fromEntries(formData);
-        console.log(formDataJSON);
-        if (formDataJSON.brandId === '0' || formDataJSON.categoryId === '0') {
+        if (formData.name === '' || formData.description === '') {
             setFormError(true);
             return false;
-        } return true
-        // onSubmit(formDataJSON)
+        }
+        onSubmit(formData)
+        return true;
     };
 
     // console.log('addProduct', props);
     // const { open } = props;
     const handleClose = () => {
+        setSelectedImage(null)
         onPopUpClose()
     }
-
+    useEffect(() => {
+        setFormData(initialValues)
+    }, [initialValues])
     return (
         <Modal
             open={open}
@@ -77,10 +92,25 @@ export default function AddBrand({ open, onPopUpClose, loading, onSubmit }) {
                 <form id='loginForm' onSubmit={handleClick} >
 
                     <Stack spacing={3}>
-                        <TextField name="productName" label="Category Name" required />
-                        <TextField name="description" label="Description" />
-                       
-                        <TextField type='file' name="imageUrl"  />
+                        <TextField
+                            type="hidden"
+                            name="id"
+                            value={formData.id}
+                        />
+
+                        <TextField name="name" label="Brand Name" value={formData.name} onChange={handleFormChange} required />
+                        <TextField name="description" label="Description" value={formData.description} onChange={handleFormChange} />
+
+                        <TextField type='file' name="imageUrl" accept="image/*" onChange={handleImageChange} />
+                        <Stack alignItems="center" justifyContent="center">
+                            <Avatar style={{
+                                width: 200,
+                                height: 200, borderRadius: 1, // Adjust the border radius value as needed
+
+                            }}
+                                alt={formData.imageurl} src={selectedImage || formData.imageUrl} />
+                        </Stack>
+
                         {formError && (
                             <FormHelperText error>
                                 This field is required.

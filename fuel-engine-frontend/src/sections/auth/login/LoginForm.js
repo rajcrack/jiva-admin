@@ -6,6 +6,7 @@ import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
 
+import { login } from '../../../api/auth';
 // ----------------------------------------------------------------------
 
 export default function LoginForm() {
@@ -13,15 +14,22 @@ export default function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleClick = (event) => {
-    
-    event.preventDefault();
-    const formElement = document.querySelector('#loginForm');
-    const formData = new FormData(formElement);
-    const formDataJSON = Object.fromEntries(formData);
-    console.log(formDataJSON)
-    localStorage.setItem('user-token','adda')
-    navigate('/dashboard', { replace: true });
+  const handleClick = async (event) => {
+    try {
+      event.preventDefault();
+      const formElement = document.querySelector('#loginForm');
+      const formData = new FormData(formElement);
+      const formDataJSON = Object.fromEntries(formData);
+
+      const loginData = await login(formDataJSON);
+
+      console.log(loginData)
+      localStorage.setItem('token', 'adda')
+      navigate('/dashboard', { replace: true });
+    }
+    catch (error) {
+      console.log(error)
+    }
   };
 
   return (
@@ -56,7 +64,7 @@ export default function LoginForm() {
       <LoadingButton fullWidth size="large" type="submit" variant="contained" >
         Login
       </LoadingButton>
-      </form>
+    </form>
 
     </>
   );

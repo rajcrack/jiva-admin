@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // @mui
 import {
     Card,
@@ -28,22 +28,23 @@ import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
-import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
-import { AddBrand } from '../sections/@dashboard/brand';
+import { getBrandList } from '../api/brand';
+import { AddBrand, BrandListHead, BrandListToolBar } from '../sections/@dashboard/brand';
 
 // mock
 import USERLIST from '../_mock/user';
+import { brand } from '../_mock/brand';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
     { id: 'name', label: 'Name', alignRight: false },
-    { id: 'company', label: 'Company', alignRight: false },
-    { id: 'role', label: 'Role', alignRight: false },
-    { id: 'isVerified', label: 'Verified', alignRight: false },
-    { id: 'status', label: 'Status', alignRight: false },
+    { id: 'description', label: 'Description', alignRight: false },
+    { id: 'imageurl', label: 'Image', alignRight: false },
+
     { id: '' },
 ];
+
 
 // ----------------------------------------------------------------------
 
@@ -75,12 +76,19 @@ function applySortFilter(array, comparator, query) {
     }
     return stabilizedThis.map((el) => el[0]);
 }
-
+const initialValues = {
+    id: '',
+    name: '',
+    description: '',
+    imageUrl: ''
+}
 export default function Brand() {
     const [open, setOpen] = useState(null);
     const [openAddPopUp, setAddPopUp] = useState(false);
     const [isAddProductLoading, setIsAddProductLoading] = useState(false);
 
+    const [total, setTotal] = useState(0);
+    const [brandList, setBrandList] = useState([]);
     const [page, setPage] = useState(0);
 
     const [order, setOrder] = useState('asc');
@@ -93,19 +101,48 @@ export default function Brand() {
 
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    const handleOpenMenu = (event) => {
+    const [brandToBeUpdated, setBrandToBeUpdated] = useState({
+        id: '',
+        name: '',
+        description: '',
+        imageUrl: ''
+    });
+
+    const handleOpenMenu = (event, id) => {
+        console.log(event)
+        console.log(id)
+        const brand = brandList.find(brand => brand.id === id)
+        console.log(brand)
+        setBrandToBeUpdated(brand)
         setOpen(event.currentTarget);
     };
 
     const handleCloseMenu = () => {
         setOpen(null);
     };
-    const handleSubmit = (data) => {
+    const handleSubmit = async (data) => {
         setIsAddProductLoading(true);
-        console.log(data);
+        if (data.id !== '') {
+            const index = brand.brandList.findIndex(brand => brand.id === data.id)
+            brand.brandList[index] = data;
+            setBrandToBeUpdated({
+                id: '',
+                name: '',
+                description: '',
+                imageUrl: ''
+            })
+        } else {
+            data.id = brand.brandList.length + 1;
+            data.imageurl = null;
+            brand.brandList.push(data);
+            brand.count = brand.brandList.length
+            console.log(data);
+        }
+
+        await getBrandListData()
         setIsAddProductLoading(false);
         setAddPopUp(false);
-
+        console.log(brandList.length);
     };
 
     const handleRequestSort = (event, property) => {
@@ -151,6 +188,19 @@ export default function Brand() {
         setPage(0);
         setFilterName(event.target.value);
     };
+    const getBrandListData = async () => {
+        const data = {
+            page: page + 1,
+            limit: rowsPerPage
+        }
+        const { brandList, count } = await getBrandList(data);
+        setTotal(count);
+        setBrandList(brandList)
+    };
+    useEffect(() => {
+        getBrandListData();
+
+    }, [])
 
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
@@ -169,29 +219,29 @@ export default function Brand() {
                     <Typography variant="h4" gutterBottom>
                         Brand
                     </Typography>
-                    <Button variant="contained" onClick={() => setAddPopUp(true)} startIcon={<Iconify icon="eva:plus-fill" />}>
+                    <Button variant="contained" onClick={() => { setBrandToBeUpdated(initialValues); setAddPopUp(true) }} startIcon={<Iconify icon="eva:plus-fill" />}>
                         Add Brand
                     </Button>
                 </Stack>
 
                 <Card>
-                    <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+                    <BrandListToolBar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
                     <Scrollbar>
                         <TableContainer sx={{ minWidth: 800 }}>
                             <Table>
-                                <UserListHead
+                                <BrandListHead
                                     order={order}
                                     orderBy={orderBy}
                                     headLabel={TABLE_HEAD}
-                                    rowCount={USERLIST.length}
+                                    rowCount={total}
                                     numSelected={selected.length}
                                     onRequestSort={handleRequestSort}
                                     onSelectAllClick={handleSelectAllClick}
                                 />
                                 <TableBody>
-                                    {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                        const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                                    {brandList.map((row) => {
+                                        const { id, name, description, imageurl } = row;
                                         const selectedUser = selected.indexOf(name) !== -1;
 
                                         return (
@@ -200,27 +250,26 @@ export default function Brand() {
                                                     <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
                                                 </TableCell>
 
-                                                <TableCell component="th" scope="row" padding="none">
+                                                <TableCell align="left">
+
+                                                    <Typography variant="subtitle2" noWrap>
+                                                        {name}
+                                                    </Typography>
+                                                </TableCell>
+
+                                                <TableCell align="left">{description}</TableCell>
+
+                                                <TableCell align="left" >
                                                     <Stack direction="row" alignItems="center" spacing={2}>
-                                                        <Avatar alt={name} src={avatarUrl} />
-                                                        <Typography variant="subtitle2" noWrap>
-                                                            {name}
-                                                        </Typography>
+                                                        <Avatar alt={name} src={imageurl} />
+
                                                     </Stack>
                                                 </TableCell>
 
-                                                <TableCell align="left">{company}</TableCell>
 
-                                                <TableCell align="left">{role}</TableCell>
-
-                                                <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
 
                                                 <TableCell align="left">
-                                                    <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                                                </TableCell>
-
-                                                <TableCell align="right">
-                                                    <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                                                    <IconButton size="large" color="inherit" onClick={(event) => { handleOpenMenu(event, id) }}>
                                                         <Iconify icon={'eva:more-vertical-fill'} />
                                                     </IconButton>
                                                 </TableCell>
@@ -233,6 +282,7 @@ export default function Brand() {
                                         </TableRow>
                                     )}
                                 </TableBody>
+
 
                                 {isNotFound && (
                                     <TableBody>
@@ -264,7 +314,7 @@ export default function Brand() {
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 25]}
                         component="div"
-                        count={USERLIST.length}
+                        count={total}
                         rowsPerPage={rowsPerPage}
                         page={page}
                         onPageChange={handleChangePage}
@@ -273,7 +323,7 @@ export default function Brand() {
                 </Card>
             </Container>
 
-            <AddBrand open={openAddPopUp} onPopUpClose={() => setAddPopUp(false)} loading={isAddProductLoading} onSubmit={handleSubmit} />
+            <AddBrand open={openAddPopUp} onPopUpClose={() => setAddPopUp(false)} loading={isAddProductLoading} onSubmit={handleSubmit} initialValues={brandToBeUpdated} />
             <Popover
                 open={Boolean(open)}
                 anchorEl={open}
@@ -292,7 +342,7 @@ export default function Brand() {
                     },
                 }}
             >
-                <MenuItem>
+                <MenuItem onClick={() => setAddPopUp(true)}>
                     <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
                     Edit
                 </MenuItem>

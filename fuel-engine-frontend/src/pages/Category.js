@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // @mui
 import {
     Card,
@@ -22,28 +22,30 @@ import {
     TableContainer,
     TablePagination,
 } from '@mui/material';
-import { AddCategory } from '../sections/@dashboard/category';
 
 // components
 import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
-import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
+import { getBrandList } from '../api/brand';
+import { AddCategory, CategoryListHead, CategoryListToolBar } from '../sections/@dashboard/category';
 
 // mock
 import USERLIST from '../_mock/user';
+import { category } from '../_mock/category';
+import { getCategoryList, updateCategory, createCategory } from '../api/category';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
     { id: 'name', label: 'Name', alignRight: false },
-    { id: 'company', label: 'Company', alignRight: false },
-    { id: 'role', label: 'Role', alignRight: false },
-    { id: 'isVerified', label: 'Verified', alignRight: false },
-    { id: 'status', label: 'Status', alignRight: false },
+    { id: 'description', label: 'Description', alignRight: false },
+    { id: 'imageurl', label: 'Image', alignRight: false },
+
     { id: '' },
 ];
+
 
 // ----------------------------------------------------------------------
 
@@ -75,12 +77,19 @@ function applySortFilter(array, comparator, query) {
     }
     return stabilizedThis.map((el) => el[0]);
 }
-
+const initialValues = {
+    id: '',
+    name: '',
+    description: '',
+    imageUrl: ''
+}
 export default function Category() {
     const [open, setOpen] = useState(null);
     const [openAddPopUp, setAddPopUp] = useState(false);
     const [isAddProductLoading, setIsAddProductLoading] = useState(false);
 
+    const [total, setTotal] = useState(0);
+    const [categoryList, setCategoryList] = useState([]);
     const [page, setPage] = useState(0);
 
     const [order, setOrder] = useState('asc');
@@ -93,19 +102,54 @@ export default function Category() {
 
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    const handleOpenMenu = (event) => {
+    const [categoryToBeUpdated, setCategoryToBeUpdated] = useState({
+        id: '',
+        name: '',
+        description: '',
+        imageUrl: ''
+    });
+
+    const handleOpenMenu = (event, id) => {
+        console.log(event)
+        console.log(id)
+        const category = categoryList.find(brand => brand.id === id)
+        console.log(category)
+        setCategoryToBeUpdated(category)
         setOpen(event.currentTarget);
     };
 
     const handleCloseMenu = () => {
         setOpen(null);
     };
-    const handleSubmit = (data) => {
-        setIsAddProductLoading(true);
-        console.log(data);
-        setIsAddProductLoading(false);
-        setAddPopUp(false);
+    const handleSubmit = async (data) => {
+        try {
+            setIsAddProductLoading(true);
+            if (data.id !== '') {
+                await updateCategory(data.id, data)
+                // const index = category.categoryList.findIndex(category => category.id === data.id)
+                // category.categoryList[index] = data;
+                setCategoryToBeUpdated({
+                    id: '',
+                    name: '',
+                    description: '',
+                    imageUrl: ''
+                })
+            } else {
+                await createCategory(data)
+                // data.id = category.categoryList.length + 1;
+                // data.imageurl = null;
+                // category.categoryList.push(data);
+                // category.count = category.categoryList.length
+                // console.log(data);
+            }
 
+            await getCategoryListData()
+            setIsAddProductLoading(false);
+            setAddPopUp(false);
+            console.log(categoryList.length);
+        } catch (error) {
+            console.log(error)
+        }
     };
 
     const handleRequestSort = (event, property) => {
@@ -151,6 +195,23 @@ export default function Category() {
         setPage(0);
         setFilterName(event.target.value);
     };
+    const getCategoryListData = async () => {
+        try {
+            const data = {
+                page: page + 1,
+                limit: rowsPerPage
+            }
+            const { categoryList, count } = await getCategoryList(data);
+            setTotal(count);
+            setCategoryList(categoryList)
+        } catch (error) {
+            console.log(error)
+        }
+    };
+    useEffect(() => {
+        getCategoryListData();
+
+    }, [])
 
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
@@ -169,29 +230,29 @@ export default function Category() {
                     <Typography variant="h4" gutterBottom>
                         Category
                     </Typography>
-                    <Button variant="contained" onClick={() => setAddPopUp(true)} startIcon={<Iconify icon="eva:plus-fill" />}>
+                    <Button variant="contained" onClick={() => { setCategoryToBeUpdated(initialValues); setAddPopUp(true) }} startIcon={<Iconify icon="eva:plus-fill" />}>
                         Add Category
                     </Button>
                 </Stack>
 
                 <Card>
-                    <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+                    <CategoryListToolBar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
                     <Scrollbar>
                         <TableContainer sx={{ minWidth: 800 }}>
                             <Table>
-                                <UserListHead
+                                <CategoryListHead
                                     order={order}
                                     orderBy={orderBy}
                                     headLabel={TABLE_HEAD}
-                                    rowCount={USERLIST.length}
+                                    rowCount={total}
                                     numSelected={selected.length}
                                     onRequestSort={handleRequestSort}
                                     onSelectAllClick={handleSelectAllClick}
                                 />
                                 <TableBody>
-                                    {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                        const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                                    {categoryList.map((row) => {
+                                        const { id, name, description, imageurl } = row;
                                         const selectedUser = selected.indexOf(name) !== -1;
 
                                         return (
@@ -200,27 +261,26 @@ export default function Category() {
                                                     <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
                                                 </TableCell>
 
-                                                <TableCell component="th" scope="row" padding="none">
+                                                <TableCell align="left">
+
+                                                    <Typography variant="subtitle2" noWrap>
+                                                        {name}
+                                                    </Typography>
+                                                </TableCell>
+
+                                                <TableCell align="left">{description}</TableCell>
+
+                                                <TableCell align="left" >
                                                     <Stack direction="row" alignItems="center" spacing={2}>
-                                                        <Avatar alt={name} src={avatarUrl} />
-                                                        <Typography variant="subtitle2" noWrap>
-                                                            {name}
-                                                        </Typography>
+                                                        <Avatar alt={name} src={imageurl} />
+
                                                     </Stack>
                                                 </TableCell>
 
-                                                <TableCell align="left">{company}</TableCell>
 
-                                                <TableCell align="left">{role}</TableCell>
-
-                                                <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
 
                                                 <TableCell align="left">
-                                                    <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                                                </TableCell>
-
-                                                <TableCell align="right">
-                                                    <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                                                    <IconButton size="large" color="inherit" onClick={(event) => { handleOpenMenu(event, id) }}>
                                                         <Iconify icon={'eva:more-vertical-fill'} />
                                                     </IconButton>
                                                 </TableCell>
@@ -233,6 +293,7 @@ export default function Category() {
                                         </TableRow>
                                     )}
                                 </TableBody>
+
 
                                 {isNotFound && (
                                     <TableBody>
@@ -264,7 +325,7 @@ export default function Category() {
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 25]}
                         component="div"
-                        count={USERLIST.length}
+                        count={total}
                         rowsPerPage={rowsPerPage}
                         page={page}
                         onPageChange={handleChangePage}
@@ -273,7 +334,7 @@ export default function Category() {
                 </Card>
             </Container>
 
-            <AddCategory open={openAddPopUp} onPopUpClose={() => setAddPopUp(false)} loading={isAddProductLoading} onSubmit={handleSubmit} />
+            <AddCategory open={openAddPopUp} onPopUpClose={() => setAddPopUp(false)} loading={isAddProductLoading} onSubmit={handleSubmit} initialValues={categoryToBeUpdated} />
             <Popover
                 open={Boolean(open)}
                 anchorEl={open}
@@ -292,7 +353,7 @@ export default function Category() {
                     },
                 }}
             >
-                <MenuItem>
+                <MenuItem onClick={() => setAddPopUp(true)}>
                     <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
                     Edit
                 </MenuItem>

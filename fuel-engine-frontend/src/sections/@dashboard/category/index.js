@@ -4,3 +4,5 @@ export { default as ProductSort } from './ProductSort';
 export { default as ProductCartWidget } from './ProductCartWidget';
 export { default as ProductFilterSidebar } from './ProductFilterSidebar';
 export { default as AddCategory } from './AddCategory';
+export { default as CategoryListHead } from './CategoryListHead';
+export { default as CategoryListToolBar } from './CategoryListToolBar';
