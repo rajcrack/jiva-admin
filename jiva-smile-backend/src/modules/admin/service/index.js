@@ -1,9 +1,9 @@
+require("dotenv").config();
 const { dataBase } = require("../../../config/config.js");
 const jwt = require("jsonwebtoken");
 const { loginSchema } = require("../../../modules/admin/validator/loginSchema.js");
 const { validateRequest } = require("../../../common/validation.js");
 // const { successResponseHandler, errorResponseHandler } = require("../../../common/response.handler")
-
 const login = async (req, res) => {
     const { email, password } = validateRequest(req.body, loginSchema);
     // const user = { email, password };
@@ -32,14 +32,15 @@ const login = async (req, res) => {
                     //     data: data,
                     //     error: null,
                     // });
+                    const admin = data[0];
+                    const token = jwt.sign({ email: admin.email, name: admin.name }, process.env.SECRET_KEY, { expiresIn: '1h' });
 
-
-                    const user = data[0];
                     res.status(200).json({
                         success: true,
                         data: {
-                            email: user.email,
-                            name: user.name,
+                            email: admin.email,
+                            name: admin.name,
+                            token: token,
                         },
                         error: null,
                     });
@@ -58,4 +59,3 @@ const login = async (req, res) => {
 module.exports = { login };
 
 
-// module.exports = { login };
